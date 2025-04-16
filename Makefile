@@ -100,3 +100,9 @@ configure-hooks:
 # Generate swagger.json
 generate-swagger:
 	DJANGO_DB=sqlite LOG_DIR=tmp DEBUG=true LOG_LEVEL=DEBUG DJANGO_SETTINGS_MODULE=core.settings.label_studio poetry run python label_studio/manage.py generate_swagger swagger.json
+
+up:
+	docker compose up -d
+
+down:
+	docker compose down -v
