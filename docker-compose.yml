@@ -40,6 +40,9 @@ services:
       - POSTGRE_HOST=db
       - LABEL_STUDIO_HOST=${LABEL_STUDIO_HOST:-}
       - JSON_LOG=1
+      # - LABEL_STUDIO_USERNAME=product-chapter@madup.com
+      # - LABEL_STUDIO_PASSWORD=aoemdjqeoqkr1!
+      # - DISABLE_SIGNUP_WITHOUT_LINK=True
     #      - LOG_LEVEL=DEBUG
     volumes:
       - ./mydata:/label-studio/data:rw
