@@ -1,4 +1,4 @@
-import { useContext, useMemo } from "react";
+import { useCallback, useContext, useMemo } from "react";
 import { Draggable } from "react-beautiful-dnd";
 
 import { sanitizeHtml } from "../../utils/html";
@@ -11,6 +11,8 @@ interface ItemProps {
   item: InputItem;
   index: number;
   readonly?: boolean;
+  columnId?: string;
+  onItemClick?: (itemId: string, columnId: string) => void;
 }
 
 /**
@@ -18,7 +20,7 @@ interface ItemProps {
  * given column as well as between columns.
  */
 const Item = (props: ItemProps) => {
-  const { item, index, readonly } = props;
+  const { item, index, readonly, columnId, onItemClick } = props;
 
   // @todo document html parameter later after proper tests
   const html = useMemo(() => (item.html ? sanitizeHtml(item.html) : ""), [item.html]);
@@ -29,6 +31,18 @@ const Item = (props: ItemProps) => {
 
   if (collapsible) classNames.push(collapsed ? styles.collapsed : styles.expanded);
 
+  // Handle item click to move to opposite column
+  const handleClick = useCallback((e: React.MouseEvent) => {
+    // Don't trigger on title click (for collapse/expand)
+    if ((e.target as HTMLElement).closest(`.${styles.itemTitle}`)) {
+      return;
+    }
+    
+    if (onItemClick && columnId) {
+      onItemClick(item.id, columnId);
+    }
+  }, [onItemClick, item.id, columnId]);
+
   return (
     <Draggable draggableId={item.id} index={index} isDragDisabled={readonly}>
       {(provided) => {
@@ -36,10 +50,14 @@ const Item = (props: ItemProps) => {
           <div
             {...provided.draggableProps}
             {...provided.dragHandleProps}
-            style={{ ...provided.draggableProps.style }}
+            style={{ 
+              ...provided.draggableProps.style,
+              cursor: readonly ? 'default' : 'pointer'
+            }}
             className={classNames.join(" ")}
             ref={provided.innerRef}
             data-ranker-id={item.id}
+            onClick={handleClick}
           >
             {item.title && (
               <h3 className={styles.itemTitle} onClick={toggle}>

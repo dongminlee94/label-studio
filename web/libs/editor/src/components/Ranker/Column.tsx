@@ -12,6 +12,7 @@ interface ColumnProps {
   column: NewColumnData;
   items: InputItem[];
   readonly?: boolean;
+  onItemClick?: (itemId: string, columnId: string) => void;
 }
 
 /**
@@ -41,7 +42,7 @@ const CollapsibleColumnTitle = ({ items, title }: { items: InputItem[]; title: s
  * that can be reordered by dragging.
  */
 const Column = (props: ColumnProps) => {
-  const { column, items, readonly } = props;
+  const { column, items, readonly, onItemClick } = props;
   const [collapsible] = useContext(CollapsedContext);
 
   const title = collapsible ? (
@@ -57,7 +58,7 @@ const Column = (props: ColumnProps) => {
         {(provided) => (
           <div ref={provided.innerRef} {...provided.droppableProps} className={styles.dropArea}>
             {items.map((item, index) => (
-              <Item key={item.id} item={item} index={index} readonly={readonly} />
+              <Item key={item.id} item={item} index={index} readonly={readonly} columnId={column.id} onItemClick={onItemClick} />
             ))}
             {provided.placeholder}
           </div>

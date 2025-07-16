@@ -2,7 +2,7 @@ import { createContext, useCallback, useEffect, useState } from "react";
 import { DragDropContext, type DropResult } from "react-beautiful-dnd";
 
 import Column from "./Column";
-import type { NewBoardData } from "./createData";
+import type { NewBoardData, NewColumnData } from "./createData";
 
 import styles from "./Ranker.module.scss";
 
@@ -35,6 +35,41 @@ const Ranker = ({ inputData, handleChange, readonly, collapsible = true }: Board
   useEffect(() => {
     setData(inputData);
   }, [inputData]);
+
+    // Handle item click to move to opposite column
+  const handleItemClick = useCallback((itemId: string, currentColumnId: string) => {
+    if (readonly) return;
+    
+    // Find the other column (for 2-column setup) - exclude "_" column
+    const otherColumn = data.columns.find((col: NewColumnData) => col.id !== currentColumnId && col.id !== "_");
+    if (!otherColumn) return;
+
+    // Remove item from current column
+    const currentItems = [...data.itemIds[currentColumnId]];
+    const itemIndex = currentItems.indexOf(itemId);
+    if (itemIndex === -1) return;
+
+    currentItems.splice(itemIndex, 1);
+
+    // Add item to other column (at the top)
+    const otherItems = [...(data.itemIds[otherColumn.id] ?? [])];
+    otherItems.unshift(itemId);
+
+    // Create new data
+    const newItemIds = {
+      ...data.itemIds,
+      [currentColumnId]: currentItems,
+      [otherColumn.id]: otherItems,
+    };
+
+    const newData = {
+      ...data,
+      itemIds: newItemIds,
+    };
+
+    setData(newData);
+    handleChange?.(newItemIds);
+  }, [data, readonly, handleChange]);
 
   // Handle reordering of items
   const handleDragEnd = (result: DropResult) => {
@@ -107,7 +142,7 @@ const Ranker = ({ inputData, handleChange, readonly, collapsible = true }: Board
             {data.columns.map((column) => {
               const items = data.itemIds[column.id]?.map((itemId) => data.items[itemId]) ?? [];
 
-              return <Column key={column.id} column={column} items={items} readonly={readonly} />;
+              return <Column key={column.id} column={column} items={items} readonly={readonly} onItemClick={handleItemClick} />;
             })}
           </>
         </div>
